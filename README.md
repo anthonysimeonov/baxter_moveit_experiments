@@ -45,6 +45,8 @@ while (total_paths < 30): #run until either desired number of total or feasible 
     ...
 ```
 
+# Environments
+The environment meta-data is saved in the pickled file ```env/trainEnvironments.pkl``` and the .STL files for the obstacles (book, soda can, mug, and bottle) are save in the ```meshes/``` directory. The environment data includes the dimensions, z-offset, workspace locations, and default mesh file path for loading the scene. A table planning scene interface is included in the script which loads this environment meta data and applies the different environments to the MoveIt scene such that the MoveIt collision checker and planner can be used with these obstacles in their respective locations. For each environment, there is also a set of collision-free configurations which resemble a grasp near the table surface saved in the pickle file ```env/trainEnvironments_testGoals.pkl``` which are similarly loaded in the main script to sample from when creating planning requests. 
 
 # Running Experiments and Analyzing Data
 The simulated robot and general MoveIt environment can be set up by launching
