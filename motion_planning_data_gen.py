@@ -19,7 +19,10 @@ from util.moveit_functions import create_scene_obs, moveit_scrambler, moveit_uns
 
 class TableSceneModifier():
     def __init__(self, mesh_path='./meshes/'):
-        #x, y boundary with some padding
+        # Workspaces boundaries manually set up to have Baxter reach toward the table as if grasping an object
+        # Can use this to create new target configurations for the robot
+
+        #x, y boundary 
         self.valid_pose_boundary_x = [[0.8, 0.95], [-0.2, 1.02]]
         self.valid_pose_boundary_y = [[-0.69, 0.0], [-1.05, -0.79]] #top shelf [xmin, xmax, ymin, ymax, z1 = 0.24, z2 = 0.78
 
@@ -163,12 +166,13 @@ def main():
     # group.set_goal_joint_tolerance(0.001)
     # group.set_max_velocity_scaling_factor(0.7)
     # group.set_max_acceleration_scaling_factor(0.1)
-    group.set_planning_time(10)
+    max_time = 300
+    group.set_planning_time(max_time)
 
 
     # Dictionary to save path data, and filename to save the data to in the end
     pathsDict = {}
-    pathsFile = "data/path_data_example"
+    pathsFile = "data/path_data_example_quick"
 
     # load data from environment files for obstacle locations and collision free goal poses
     with open("env/trainEnvironments.pkl", "rb") as env_f:
@@ -177,11 +181,12 @@ def main():
     with open("env/trainEnvironments_testGoals.pkl", "rb") as goal_f:
         goalDict = pickle.load(goal_f)
 
+    # Obstacle data stored in environment dictionary, loaded into scene modifier to apply obstacle scenes to MoveIt
     sceneModifier = PlanningSceneModifier(envDict['obsData'])
     sceneModifier.setup_scene(scene, robot, group)
 
     robot_state = robot.get_current_state()
-    rs_man = RobotState()  # constructed manually for comparison
+    rs_man = RobotState()
     rs_man.joint_state.name = robot_state.joint_state.name
 
 
@@ -215,7 +220,7 @@ def main():
             feasible_paths = 0
             i_path = 0
 
-            while (total_paths < 5): #run until either desired number of total or feasible paths has been found
+            while (total_paths < 30): #run until either desired number of total or feasible paths has been found
 
                 #do planning and save data
 
@@ -226,7 +231,6 @@ def main():
                     goal = collision_free_goals[np.random.randint(0, len(collision_free_goals))]
                     optimal_path = [neutral_start.values(), goal.values()]
                     optimal_cost = compute_cost(optimal_path) 
-                    print("Optimal cost: " + str(optimal_cost))
 
                     if optimal_cost > min_goal_cost_threshold:
                         valid_goal = True 
@@ -265,18 +269,20 @@ def main():
                     print("Cost: " + str(cost))
 
                     # Uncomment below if using max time as criteria for failure
+                    if (t > (max_time*0.99)):
+                        print("Reached max time...")
+                        continue  
 
-                    # if (t > 299):
-                    #     print("Reached max time...")
-                    #     continue  
+                    feasible_paths += 1
 
                     pathsDict[env_name]['paths'].append(pos)
                     pathsDict[env_name]['costs'].append(cost)
                     pathsDict[env_name]['times'].append(t)
-                    feasible_paths += 1
+                    pathsDict[env_name]['feasible'] = feasible_paths
+                    pathsDict[env_name]['total'] = total_paths
+                    
 
-                    # Uncomment below if you want to overwrite data on each new feasible path (accuracy not being stored for intermediate saves)
-
+                    # Uncomment below if you want to overwrite data on each new feasible path
                     with open (pathsFile + "_" + env_name + ".pkl", "wb") as path_f:
                         pickle.dump(pathsDict[env_name], path_f)
 
@@ -299,12 +305,11 @@ def main():
             with open(pathsFile + "_" + env_name + ".pkl", "wb") as path_f:
                 pickle.dump(pathsDict[env_name], path_f)
 
-        print("Done iterating, saving data with pickle...\n\n\n")
+        print("Done iterating, saving all data and exiting...\n\n\n")
 
         with open(pathsFile + ".pkl", "wb") as path_f:
             pickle.dump(pathsDict, path_f)
 
-        print("Done saving... exiting loop \n\n\n")
         done = True
 
 if __name__ == '__main__':
