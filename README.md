@@ -1,6 +1,8 @@
 # Baxter MoveIt Experiments
 
 Set of realistic obstacle scenes for motion planning experiments on simulated Baxter Research Robot 
+
+
 # Depends On
 [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
 
@@ -11,6 +13,13 @@ Set of realistic obstacle scenes for motion planning experiments on simulated Ba
 [MoveIt!](https://moveit.ros.org/install/source/)
 
 [Baxter MoveIt! Configuration](http://sdk.rethinkrobotics.com/wiki/MoveIt_Tutorial)
+
+# Install
+In a catkin workspace, clone repo within the source folder and build the workspace 
+```
+git clone https://github.com/anthonysimeonov/baxter_moveit_experiments.git
+catkin build
+```
 
 # Setting Up Experiments
 The main script, ```motion_planning_data_gen.py``` uses the MoveIt Python API for setting up the environment and creating motion plan requests. The program can be used with the default MoveIt OMPL motion planners as is. To use non-default OMPL planners with the Baxter MoveIt interface, this can be done by modifying the ```planning_context_manager.cpp``` file in the ```moveit_planners_ompl``` package to include the necessary OMPL headers and register the planner in the ```registerDefaultPlanners()``` function. Then in the ```baxter_moveit_config``` package, the file ```config/ompl_planning.yaml``` file can be modified to configure the planner and apply it as the default planner (using BIT* as an example):
