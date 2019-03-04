@@ -172,7 +172,7 @@ def main():
 
     # Dictionary to save path data, and filename to save the data to in the end
     pathsDict = {}
-    pathsFile = "data/path_data_example_quick"
+    pathsFile = "data/path_data_example"
 
     # load data from environment files for obstacle locations and collision free goal poses
     with open("env/trainEnvironments.pkl", "rb") as env_f:
