@@ -1,2 +1,4 @@
 unused/*
 data/*.pkl
+*.pyc
+analysis/.ipynb_checkpoints/*
